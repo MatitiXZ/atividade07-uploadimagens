@@ -14,7 +14,7 @@ import * as ImagePicker from 'expo-image-picker';
 
 const CLOUD_NAME = 'dwduyafzq';
 const UPLOAD_PRESET = 'atividadeAula7';
-const BACKEND_URL = 'http://00.00.00.0:3001'; //colocar ip da máquina
+const BACKEND_URL = 'http://000.000.0.00:3001'; //colocar ip da máquina
 
 export default function App() {
   const [images, setImages] = useState([]);
@@ -26,9 +26,9 @@ export default function App() {
       const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
       if (status !== 'granted') {
         Alert.alert('Permissão necessária', 'Precisamos da sua permissão para acessar a galeria.');
-      } else {
-        loadImages();
+        return;
       }
+      loadImages();
     })();
   }, []);
 
@@ -38,13 +38,15 @@ export default function App() {
       quality: 1,
     });
 
-    if (!result.cancelled) {
-      await uploadToCloudinary(result);
+    if (!result.canceled && result.assets.length > 0) {
+      const photo = result.assets[0];
+      await uploadToCloudinary(photo);
     }
   };
 
   const uploadToCloudinary = async (photo) => {
     setUploading(true);
+
     const data = new FormData();
     data.append('file', {
       uri: photo.uri,
@@ -59,11 +61,14 @@ export default function App() {
         method: 'POST',
         body: data,
       });
+
       const result = await res.json();
+      console.log('Upload result:', result);
+
       if (result.secure_url) {
         setImages((prev) => [result, ...prev]);
       } else {
-        Alert.alert('Erro no upload', 'Falha ao enviar imagem para Cloudinary');
+        Alert.alert('Erro no upload', JSON.stringify(result));
       }
     } catch (error) {
       Alert.alert('Erro no upload', error.message);
@@ -94,7 +99,7 @@ export default function App() {
         onPress: async () => {
           try {
             const res = await fetch(`${BACKEND_URL}/delete-image`, {
-              method: 'DELETE',
+              method: 'POST', // <- importante! O PDF usou POST
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ public_id }),
             });

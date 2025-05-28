@@ -10,18 +10,20 @@ cloudinary.config({
   api_key: '593748728377114',
   api_secret: 'o5rA7e_emsr3JxDbGeckdFIUZBY',
 });
+
 const app = express();
 const PORT = 3001;
+
 app.use(cors());
 app.use(bodyParser.json());
 
-// ✅ Listar imagens com uma tag (usa o upload_preset como tag)
+// Listar imagens com a tag
 app.get('/images', async (req, res) => {
-  const { tag = 'aula8ifpe' } = req.query;
+  const { tag = 'atividadeAula7' } = req.query;
+
   try {
     const result = await cloudinary.api.resources_by_tag(tag, {
       type: 'upload',
-      prefix: '',
       max_results: 100,
     });
     res.json(result.resources);
@@ -31,12 +33,13 @@ app.get('/images', async (req, res) => {
   }
 });
 
-// ✅ Deletar imagem por public_id
+// Deletar imagem por public_id
 app.post('/delete-image', async (req, res) => {
   const { public_id } = req.body;
   if (!public_id) {
     return res.status(400).json({ error: 'public_id é obrigatório' });
   }
+
   try {
     const result = await cloudinary.uploader.destroy(public_id);
     res.json(result);
@@ -46,7 +49,6 @@ app.post('/delete-image', async (req, res) => {
   }
 });
 
-// Inicia o servidor
 app.listen(PORT, () => {
-  console.log(`Servidor rodando em http://00.00.00.0:${PORT}`); //colocar ip da máquina
+  console.log(`Servidor rodando em http://000.000.0.00:${PORT}`); // colocar ip da máquina
 });
